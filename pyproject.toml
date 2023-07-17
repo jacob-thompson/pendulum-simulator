@@ -1,0 +1,43 @@
+[project]
+name = "pendulum-simulator"
+version = "0.1.0"
+description = "Pendulum simulator"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+keywords = ["pendulum", "simulator", "executable", "application"]
+authors = [
+    {name = "Jacob A. Thompson", email = "jacobalthompson@gmail.com"}
+]
+maintainers = [
+    {name = "Jacob A. Thompson", email = "jacobalthompson@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Topic :: Games/Entertainment",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = ["pygame"]
+
+[project.urls]
+"Homepage" = "https://github.com/jacob-thompson/pendulum-simulator"
+"Bug Reports" = "https://github.com/jacob-thompson/pendulum-simulator/issues"
+
+[project.scripts]
+pendulum = "pendulum_simulator.main:main"
+
+#[tool.hatch.build]
+#exclude = [
+#    "src/pendulum_simulator/data/gfx/controls.png",
+#    "src/pendulum_simulator/data/gfx/screenshot.png"
+#]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
