@@ -13,7 +13,7 @@ maintainers = [
     {name = "Jacob A. Thompson", email = "jacobalthompson@gmail.com"}
 ]
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 2 - Pre-Alpha",
     "Topic :: Games/Entertainment",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -31,12 +31,6 @@ dependencies = ["pygame"]
 
 [project.scripts]
 pendulum = "pendulum_simulator.main:main"
-
-#[tool.hatch.build]
-#exclude = [
-#    "src/pendulum_simulator/data/gfx/controls.png",
-#    "src/pendulum_simulator/data/gfx/screenshot.png"
-#]
 
 [build-system]
 requires = ["hatchling"]
