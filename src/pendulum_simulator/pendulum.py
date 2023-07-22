@@ -51,9 +51,9 @@ class Pendulum:
             self.interact(event.pos, event.button)
 
     def interact(self, pos, button):
-        pivot_hitbox = pygame.Rect(0, 0, 0, 0)
+        dimension = self.pivot_radius << 1
+        pivot_hitbox = pygame.Rect(0, 0, dimension, dimension)
         pivot_hitbox.center = self.pivot
-        pivot_hitbox.size = self.pivot_radius, self.pivot_radius
 
         self.in_use = True
 
