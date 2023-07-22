@@ -25,8 +25,11 @@ class Pendulum:
 
         self.in_use = False
 
-        self.pivot = SCREEN_W >> 1, 50
+        self.pivot = SCREEN_W >> 1, 100
         self.pivot_radius = 7
+
+        self.bob = SCREEN_W >> 1, (SCREEN_H >> 1) + 100
+        self.bob_radius = 20
 
     def set_window_properties(self):
         pygame.display.set_caption(TITLE)
@@ -51,9 +54,13 @@ class Pendulum:
             self.interact(event.pos, event.button)
 
     def interact(self, pos, button):
-        dimension = self.pivot_radius << 1
-        pivot_hitbox = pygame.Rect(0, 0, dimension, dimension)
+        pivot_dimension = self.pivot_radius << 1
+        pivot_hitbox = pygame.Rect(0, 0, pivot_dimension, pivot_dimension)
         pivot_hitbox.center = self.pivot
+
+        bob_dimension = self.bob_radius << 1
+        bob_hitbox = pygame.Rect(0, 0, bob_dimension, bob_dimension)
+        bob_hitbox.center = self.bob
 
         self.in_use = True
 
@@ -61,13 +68,18 @@ class Pendulum:
         #button == 2 is scroll wheel
         #button == 3 is mouse2
 
-        if button == 1:
-            if pivot_hitbox.collidepoint(pos): self.select_pivot()
+        if pivot_hitbox.collidepoint(pos) and button == 1: self.select_pivot()
+        if bob_hitbox.collidepoint(pos) and button == 1: self.select_bob()
 
     def select_pivot(self):
         print("frictionless pivot")
         print(f"position: {self.pivot}")
         print(f"radius: {self.pivot_radius}")
+
+    def select_bob(self):
+        print("massive bob")
+        print(f"position: {self.bob}")
+        print(f"radius: {self.bob_radius}")
 
     def draw_background(self):
         self.surface.fill(self.white)
@@ -83,9 +95,13 @@ class Pendulum:
     def draw_pivot(self):
         pygame.draw.circle(self.surface, self.black, self.pivot, self.pivot_radius)
 
+    def draw_bob(self):
+        pygame.draw.circle(self.surface, self.black, self.bob, self.bob_radius, 1)
+
     def draw_frame(self):
         self.draw_background()
         self.draw_pivot()
+        self.draw_bob()
 
         if not self.in_use:
             self.draw_info()
