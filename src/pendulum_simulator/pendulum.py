@@ -17,21 +17,25 @@ class Pendulum:
         self.dir, self.file = path.split(__file__)
 
         pygame.font.init()
-        font_file = path.join(self.dir, "data", "placeholder.otf")
-        self.font = pygame.font.Font(font_file, 10)
+        font_file = path.join(self.dir, "data", "font.otf")
+        self.font = pygame.font.Font(font_file, 12)
+        self.font_big = pygame.font.Font(font_file, 20)
 
-        self.black = pygame.Color(0, 0, 0)
-        self.white = pygame.Color(255, 255, 255)
+        self.blk = pygame.Color(0, 0, 0)
+        self.wht = pygame.Color(255, 255, 255)
 
         self.in_use = False
 
-        self.pivot = SCREEN_W >> 1, 100
-        self.pivot_radius = 12
+        self.pivot_pos = SCREEN_W >> 1, SCREEN_H >> 2
+        self.pivot_r = 12
 
-        self.bob = SCREEN_W >> 1, (SCREEN_H >> 1) + 100
-        self.bob_radius = 27
+        self.bob_pos = SCREEN_W >> 1, SCREEN_H - (SCREEN_H >> 2)
+        self.bob_r = 27
 
-        self.rod_width = 3
+        self.rod_w = 3
+
+        self.selected_rect = pygame.Rect(0, 0, 0, 0)
+        self.selected = None
 
     def set_window_properties(self):
         pygame.display.set_caption(TITLE)
@@ -56,68 +60,104 @@ class Pendulum:
             self.interact(event.pos, event.button)
 
     def interact(self, pos, button):
-        pivot_dimension = self.pivot_radius << 1
-        pivot_hitbox = pygame.Rect(0, 0, pivot_dimension, pivot_dimension)
-        pivot_hitbox.center = self.pivot
-
-        bob_dimension = self.bob_radius << 1
-        bob_hitbox = pygame.Rect(0, 0, bob_dimension, bob_dimension)
-        bob_hitbox.center = self.bob
-
-        rod_hitbox = pygame.draw.line(self.surface, self.black, self.pivot, self.bob, self.rod_width << 1)
-
         self.in_use = True
+
+        pivot_dimension = self.pivot_r << 1
+        pivot_hitbox = pygame.Rect(0, 0, pivot_dimension, pivot_dimension)
+        pivot_hitbox.center = self.pivot_pos
+
+        bob_dimension = self.bob_r << 1
+        bob_hitbox = pygame.Rect(0, 0, bob_dimension, bob_dimension)
+        bob_hitbox.center = self.bob_pos
+
+        rod_hitbox = pygame.draw.line(self.surface, self.blk, self.pivot_pos, self.bob_pos, self.rod_w << 1)
 
         #button == 1 is mouse1
         #button == 2 is scroll wheel
         #button == 3 is mouse2
 
-        if pivot_hitbox.collidepoint(pos) and button == 1: self.select_pivot()
-        elif bob_hitbox.collidepoint(pos) and button == 1: self.select_bob()
-        elif rod_hitbox.collidepoint(pos) and button == 1: self.select_rod()
+        if pivot_hitbox.collidepoint(pos) and button == 1: self.select_pivot(pivot_hitbox)
+        elif bob_hitbox.collidepoint(pos) and button == 1: self.select_bob(bob_hitbox)
+        elif rod_hitbox.collidepoint(pos) and button == 1: self.select_rod(rod_hitbox)
 
-    def select_pivot(self):
-        print("frictionless pivot")
-        print(f"position: {self.pivot}")
-        #print(f"radius: {self.pivot_radius}")
+    def select_pivot(self, rect):
+        self.selected_rect = rect.copy()
+        self.selected = "frictionless pivot"
 
-    def select_bob(self):
-        print("massive bob")
-        print(f"position: {self.bob}")
-        #print(f"radius: {self.bob_radius}")
+    def select_bob(self, rect):
+        self.selected_rect = rect.copy()
+        self.selected = "massive bob"
 
-    def select_rod(self):
-        dummy_rod = pygame.draw.line(self.surface, self.black, self.pivot, self.bob, self.rod_width)
-
-        print("massless rod")
-        print(f"start point: {dummy_rod.midtop}")
-        print(f"end point: {dummy_rod.midbottom}")
-        #print(f"width: {dummy_rod.width}")
-        #print(f"height: {dummy_rod.height}")
+    def select_rod(self, rect):
+        self.selected_rect = rect.copy()
+        self.selected = "massless rod"
 
     def draw_background(self):
-        self.surface.fill(self.white)
+        self.surface.fill(self.wht)
+
+    def draw_pivot(self):
+        pygame.draw.circle(self.surface, self.blk, self.pivot_pos, self.pivot_r)
+
+    def draw_bob(self):
+        pygame.draw.circle(self.surface, self.blk, self.bob_pos, self.bob_r + 1)
+        pygame.draw.circle(self.surface, self.wht, self.bob_pos, self.bob_r)
+
+    def draw_rod(self):
+        pygame.draw.line(self.surface, self.blk, self.pivot_pos, self.bob_pos, self.rod_w)
+
+    def draw_selected(self):
+        if self.selected == None: pass
+        elif self.selected == "frictionless pivot":
+            position = f"position: {self.selected_rect.center}"
+            position_surface = self.font_big.render(position, 1, self.blk)
+            position_pos = SCREEN_W - 3, SCREEN_H
+            position_rect = position_surface.get_rect(bottomright = position_pos)
+            self.surface.blit(position_surface, position_rect)
+
+            name_surface = self.font_big.render(self.selected, 1, self.blk)
+            name_pos = position_rect.topright
+            name_rect = name_surface.get_rect(bottomright = name_pos)
+            self.surface.blit(name_surface, name_rect)
+        elif self.selected == "massive bob":
+            position = f"position: {self.selected_rect.center}"
+            position_surface = self.font_big.render(position, 1, self.blk)
+            position_pos = SCREEN_W - 3, SCREEN_H
+            position_rect = position_surface.get_rect(bottomright = position_pos)
+            self.surface.blit(position_surface, position_rect)
+
+            name_surface = self.font_big.render(self.selected, 1, self.blk)
+            name_pos = position_rect.topright
+            name_rect = name_surface.get_rect(bottomright = name_pos)
+            self.surface.blit(name_surface, name_rect)
+        elif self.selected == "massless rod":
+            end = f"end point: {self.selected_rect.midbottom}"
+            end_surface = self.font_big.render(end, 1, self.blk)
+            end_pos = SCREEN_W - 3, SCREEN_H
+            end_rect = end_surface.get_rect(bottomright = end_pos)
+            self.surface.blit(end_surface, end_rect)
+
+            start = f"start point: {self.selected_rect.midtop}"
+            start_surface = self.font_big.render(start, 1, self.blk)
+            start_pos = end_rect.topright
+            start_rect = start_surface.get_rect(bottomright = start_pos)
+            self.surface.blit(start_surface, start_rect)
+
+            name_surface = self.font_big.render(self.selected, 1, self.blk)
+            name_pos = start_rect.topright
+            name_rect = name_surface.get_rect(bottomright = name_pos)
+            self.surface.blit(name_surface, name_rect)
 
     def draw_info(self):
         info = "MIT License Copyright (c) 2023 Jacob Alexander Thompson"
-
-        dtext = self.font.render(info, 1, self.black)
-        dtpos = 3, SCREEN_H
-        dtrect = dtext.get_rect(bottomleft = dtpos)
-        self.surface.blit(dtext, dtrect)
-
-    def draw_pivot(self):
-        pygame.draw.circle(self.surface, self.black, self.pivot, self.pivot_radius)
-
-    def draw_bob(self):
-        pygame.draw.circle(self.surface, self.black, self.bob, self.bob_radius + 1)
-        pygame.draw.circle(self.surface, self.white, self.bob, self.bob_radius)
-
-    def draw_rod(self):
-        pygame.draw.line(self.surface, self.black, self.pivot, self.bob, self.rod_width)
+        text_surface = self.font.render(info, 1, self.blk)
+        text_pos = 3, SCREEN_H
+        text_rect = text_surface.get_rect(bottomleft = text_pos)
+        self.surface.blit(text_surface, text_rect)
 
     def draw_frame(self):
         self.draw_background()
+
+        self.draw_selected()
 
         self.draw_rod()
 
