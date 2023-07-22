@@ -26,10 +26,12 @@ class Pendulum:
         self.in_use = False
 
         self.pivot = SCREEN_W >> 1, 100
-        self.pivot_radius = 7
+        self.pivot_radius = 12
 
         self.bob = SCREEN_W >> 1, (SCREEN_H >> 1) + 100
-        self.bob_radius = 20
+        self.bob_radius = 27
+
+        self.rod_width = 3
 
     def set_window_properties(self):
         pygame.display.set_caption(TITLE)
@@ -62,6 +64,8 @@ class Pendulum:
         bob_hitbox = pygame.Rect(0, 0, bob_dimension, bob_dimension)
         bob_hitbox.center = self.bob
 
+        rod_hitbox = pygame.draw.line(self.surface, self.black, self.pivot, self.bob, self.rod_width << 1)
+
         self.in_use = True
 
         #button == 1 is mouse1
@@ -69,17 +73,27 @@ class Pendulum:
         #button == 3 is mouse2
 
         if pivot_hitbox.collidepoint(pos) and button == 1: self.select_pivot()
-        if bob_hitbox.collidepoint(pos) and button == 1: self.select_bob()
+        elif bob_hitbox.collidepoint(pos) and button == 1: self.select_bob()
+        elif rod_hitbox.collidepoint(pos) and button == 1: self.select_rod()
 
     def select_pivot(self):
         print("frictionless pivot")
         print(f"position: {self.pivot}")
-        print(f"radius: {self.pivot_radius}")
+        #print(f"radius: {self.pivot_radius}")
 
     def select_bob(self):
         print("massive bob")
         print(f"position: {self.bob}")
-        print(f"radius: {self.bob_radius}")
+        #print(f"radius: {self.bob_radius}")
+
+    def select_rod(self):
+        dummy_rod = pygame.draw.line(self.surface, self.black, self.pivot, self.bob, self.rod_width)
+
+        print("massless rod")
+        print(f"start point: {dummy_rod.midtop}")
+        print(f"end point: {dummy_rod.midbottom}")
+        #print(f"width: {dummy_rod.width}")
+        #print(f"height: {dummy_rod.height}")
 
     def draw_background(self):
         self.surface.fill(self.white)
@@ -96,10 +110,18 @@ class Pendulum:
         pygame.draw.circle(self.surface, self.black, self.pivot, self.pivot_radius)
 
     def draw_bob(self):
-        pygame.draw.circle(self.surface, self.black, self.bob, self.bob_radius, 1)
+        pygame.draw.circle(self.surface, self.black, self.bob, self.bob_radius + 1)
+        pygame.draw.circle(self.surface, self.white, self.bob, self.bob_radius)
+
+    def draw_rod(self):
+        pygame.draw.line(self.surface, self.black, self.pivot, self.bob, self.rod_width)
 
     def draw_frame(self):
         self.draw_background()
+
+        self.draw_rod()
+
+        # must be drawn after rod
         self.draw_pivot()
         self.draw_bob()
 
