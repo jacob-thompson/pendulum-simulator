@@ -72,25 +72,21 @@ class Pendulum:
 
         rod_hitbox = pygame.draw.line(self.surface, self.blk, self.pivot_pos, self.bob_pos, self.rod_w << 1)
 
-        #button == 1 is mouse1
-        #button == 2 is scroll wheel
-        #button == 3 is mouse2
+        #button == 1 is mouse1; left click
+        #button == 2 is scroll wheel; middle click
+        #button == 3 is mouse2; right click
 
-        if pivot_hitbox.collidepoint(pos) and button == 1: self.select_pivot(pivot_hitbox)
-        elif bob_hitbox.collidepoint(pos) and button == 1: self.select_bob(bob_hitbox)
-        elif rod_hitbox.collidepoint(pos) and button == 1: self.select_rod(rod_hitbox)
-
-    def select_pivot(self, rect):
-        self.selected_rect = rect.copy()
-        self.selected = "frictionless pivot"
-
-    def select_bob(self, rect):
-        self.selected_rect = rect.copy()
-        self.selected = "massive bob"
-
-    def select_rod(self, rect):
-        self.selected_rect = rect.copy()
-        self.selected = "massless rod"
+        if pivot_hitbox.collidepoint(pos) and button == 1:
+            self.selected_rect = pivot_hitbox.copy()
+            self.selected = "frictionless pivot"
+        elif bob_hitbox.collidepoint(pos) and button == 1:
+            self.selected_rect = bob_hitbox.copy()
+            self.selected = "massive bob"
+        elif rod_hitbox.collidepoint(pos) and button == 1:
+            self.selected_rect = rod_hitbox.copy()
+            self.selected = "massless rod"
+        elif button == 1:
+            self.selected = None
 
     def draw_background(self):
         self.surface.fill(self.wht)
