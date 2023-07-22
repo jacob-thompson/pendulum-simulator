@@ -76,16 +76,16 @@ class Pendulum:
         #button == 2 is scroll wheel; middle click
         #button == 3 is mouse2; right click
 
-        if pivot_hitbox.collidepoint(pos) and button == 1:
+        if pivot_hitbox.collidepoint(pos) and button == 3:
             self.selected_rect = pivot_hitbox.copy()
             self.selected = "frictionless pivot"
-        elif bob_hitbox.collidepoint(pos) and button == 1:
+        elif bob_hitbox.collidepoint(pos) and button == 3:
             self.selected_rect = bob_hitbox.copy()
             self.selected = "massive bob"
-        elif rod_hitbox.collidepoint(pos) and button == 1:
+        elif rod_hitbox.collidepoint(pos) and button == 3:
             self.selected_rect = rod_hitbox.copy()
             self.selected = "massless rod"
-        elif button == 1:
+        else:
             self.selected = None
 
     def draw_background(self):
