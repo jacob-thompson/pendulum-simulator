@@ -24,6 +24,8 @@ class Pendulum:
         self.blk = pygame.Color(0, 0, 0)
         self.wht = pygame.Color(255, 255, 255)
 
+        self.mouse_pos = self.mouse_x, self.mouse_y = 0, 0
+
         self.in_use = False
 
         self.pivot_pos = SCREEN_W >> 1, SCREEN_H >> 2
@@ -50,6 +52,10 @@ class Pendulum:
     def tick(self):
         self.clock.tick(FPS)
 
+    def update_mouse_position(self):
+        self.mouse_pos = self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+        #print(f"mouse position : {self.mouse_pos}")
+
     def handle_event(self, event):
         if event.type == pygame.QUIT: exit()
 
@@ -57,9 +63,9 @@ class Pendulum:
             if event.key == pygame.K_ESCAPE: exit()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            self.interact(event.pos, event.button)
+            self.interact(event.button)
 
-    def interact(self, pos, button):
+    def interact(self, button):
         self.in_use = True
 
         pivot_dimension = self.pivot_r << 1
@@ -76,13 +82,13 @@ class Pendulum:
         #button == 2 is scroll wheel; middle click
         #button == 3 is mouse2; right click
 
-        if pivot_hitbox.collidepoint(pos) and button == 3:
+        if pivot_hitbox.collidepoint(self.mouse_pos) and button == 3:
             self.selected_rect = pivot_hitbox.copy()
             self.selected = "frictionless pivot"
-        elif bob_hitbox.collidepoint(pos) and button == 3:
+        elif bob_hitbox.collidepoint(self.mouse_pos) and button == 3:
             self.selected_rect = bob_hitbox.copy()
             self.selected = "massive bob"
-        elif rod_hitbox.collidepoint(pos) and button == 3:
+        elif rod_hitbox.collidepoint(self.mouse_pos) and button == 3:
             self.selected_rect = rod_hitbox.copy()
             self.selected = "massless rod"
         else: self.selected = None
@@ -147,9 +153,9 @@ class Pendulum:
         self.draw_rod()
         self.draw_bob() # must be drawn after rod
 
-    def draw_info(self):
-        info = "MIT License Copyright (c) 2023 Jacob Alexander Thompson"
-        text_surface = self.font.render(info, 1, self.blk)
+    def draw_license_disclaimer(self):
+        disclaimer = "MIT License Copyright (c) 2023 Jacob Alexander Thompson"
+        text_surface = self.font.render(disclaimer, 1, self.blk)
         text_pos = 3, SCREEN_H
         text_rect = text_surface.get_rect(bottomleft = text_pos)
         self.surface.blit(text_surface, text_rect)
@@ -162,7 +168,7 @@ class Pendulum:
         self.draw_pendulum()
 
         if not self.in_use:
-            self.draw_info()
+            self.draw_license_disclaimer()
 
     def update_frame(self):
         pygame.display.flip()
