@@ -1,40 +1,38 @@
-from .cfg import SCREEN_W, SCREEN_H, TITLE, FPS
-
 from os import path
 from sys import exit
 
 import pygame
 
+BLACK = pygame.Color(0, 0, 0)
+WHITE = pygame.Color(255, 255, 255)
+SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+TITLE = "Pendulum Simulator"
+FPS = 60
+
 class Pendulum:
     def __init__(self):
         pygame.display.init()
-
-        size = SCREEN_W, SCREEN_H
-        self.surface = pygame.display.set_mode(size)
+        self.surface = pygame.display.set_mode(SCREEN_SIZE)
 
         self.clock = pygame.time.Clock()
 
-        self.dir, self.file = path.split(__file__)
-
         pygame.font.init()
+        self.dir, self.file = path.split(__file__)
         font_file = path.join(self.dir, "data", "font.otf")
         self.font = pygame.font.Font(font_file, 12)
         self.font_big = pygame.font.Font(font_file, 20)
 
-        self.blk = pygame.Color(0, 0, 0)
-        self.wht = pygame.Color(255, 255, 255)
+        self.active = False
 
-        self.mouse_pos = self.mouse_x, self.mouse_y = 0, 0
+        self.mouse_pos = self.mousex, self.mousey = 0, 0
 
-        self.in_use = False
+        self.pivot_pos = SCREEN_WIDTH >> 1, SCREEN_HEIGHT >> 2
+        self.pivot_radius = 12
 
-        self.pivot_pos = SCREEN_W >> 1, SCREEN_H >> 2
-        self.pivot_r = 12
+        self.bob_pos = SCREEN_WIDTH >> 1, SCREEN_HEIGHT - (SCREEN_HEIGHT >> 2)
+        self.bob_radius = 27
 
-        self.bob_pos = SCREEN_W >> 1, SCREEN_H - (SCREEN_H >> 2)
-        self.bob_r = 27
-
-        self.rod_w = 3
+        self.rod_width = 3
 
         self.selected_rect = pygame.Rect(0, 0, 0, 0)
         self.selected = None
@@ -47,14 +45,13 @@ class Pendulum:
         pygame.display.set_icon(icon)
 
     def print_info(self):
-        print("pendulum-simulator https://github.com/jacob-thompson/pendulum-simulator")
+        print(f"{TITLE} https://github.com/jacob-thompson/pendulum-simulator")
 
     def tick(self):
         self.clock.tick(FPS)
 
     def update_mouse_position(self):
-        self.mouse_pos = self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
-        #print(f"mouse position : {self.mouse_pos}")
+        self.mouse_pos = self.mousex, self.mousey = pygame.mouse.get_pos()
 
     def handle_event(self, event):
         if event.type == pygame.QUIT: exit()
@@ -66,84 +63,82 @@ class Pendulum:
             self.interact(event.button)
 
     def interact(self, button):
-        self.in_use = True
+        self.active = True
 
-        pivot_dimension = self.pivot_r << 1
-        pivot_hitbox = pygame.Rect(0, 0, pivot_dimension, pivot_dimension)
-        pivot_hitbox.center = self.pivot_pos
+        pivot = pygame.Rect(0, 0, self.pivot_radius << 1, self.pivot_radius << 1)
+        pivot.center = self.pivot_pos
 
-        bob_dimension = self.bob_r << 1
-        bob_hitbox = pygame.Rect(0, 0, bob_dimension, bob_dimension)
-        bob_hitbox.center = self.bob_pos
+        bob = pygame.Rect(0, 0, self.bob_radius << 1, self.bob_radius << 1)
+        bob.center = self.bob_pos
 
-        rod_hitbox = pygame.draw.line(self.surface, self.blk, self.pivot_pos, self.bob_pos, self.rod_w << 1)
+        rod = pygame.draw.line(self.surface, BLACK, self.pivot_pos, self.bob_pos, self.rod_width << 1)
 
         #button == 1 is mouse1; left click
         #button == 2 is scroll wheel; middle click
         #button == 3 is mouse2; right click
 
-        if pivot_hitbox.collidepoint(self.mouse_pos) and button == 3:
-            self.selected_rect = pivot_hitbox.copy()
+        if button == 3 and pivot.collidepoint(self.mouse_pos):
+            self.selected_rect = pivot.copy()
             self.selected = "frictionless pivot"
-        elif bob_hitbox.collidepoint(self.mouse_pos) and button == 3:
-            self.selected_rect = bob_hitbox.copy()
+        elif button == 3 and bob.collidepoint(self.mouse_pos):
+            self.selected_rect = bob.copy()
             self.selected = "massive bob"
-        elif rod_hitbox.collidepoint(self.mouse_pos) and button == 3:
-            self.selected_rect = rod_hitbox.copy()
+        elif button == 3 and rod.collidepoint(self.mouse_pos):
+            self.selected_rect = rod.copy()
             self.selected = "massless rod"
         else: self.selected = None
 
     def draw_background(self):
-        self.surface.fill(self.wht)
+        self.surface.fill(WHITE)
 
     def draw_pivot(self):
-        pygame.draw.circle(self.surface, self.blk, self.pivot_pos, self.pivot_r)
+        pygame.draw.circle(self.surface, BLACK, self.pivot_pos, self.pivot_radius)
 
     def draw_bob(self):
-        pygame.draw.circle(self.surface, self.blk, self.bob_pos, self.bob_r + 1)
-        pygame.draw.circle(self.surface, self.wht, self.bob_pos, self.bob_r)
+        pygame.draw.circle(self.surface, BLACK, self.bob_pos, self.bob_radius + 1)
+        pygame.draw.circle(self.surface, WHITE, self.bob_pos, self.bob_radius)
 
     def draw_rod(self):
-        pygame.draw.line(self.surface, self.blk, self.pivot_pos, self.bob_pos, self.rod_w)
+        pygame.draw.line(self.surface, BLACK, self.pivot_pos, self.bob_pos, self.rod_width)
 
     def draw_selected(self):
         if self.selected == None: pass
         elif self.selected == "frictionless pivot":
             position = f"position: {self.selected_rect.center}"
-            position_surface = self.font_big.render(position, 1, self.blk)
-            position_pos = SCREEN_W - 3, SCREEN_H
+            position_surface = self.font_big.render(position, 1, BLACK)
+            position_pos = SCREEN_WIDTH - 3, SCREEN_HEIGHT
             position_rect = position_surface.get_rect(bottomright = position_pos)
             self.surface.blit(position_surface, position_rect)
 
-            name_surface = self.font_big.render(self.selected, 1, self.blk)
+            name_surface = self.font_big.render(self.selected, 1, BLACK)
             name_pos = position_rect.topright
             name_rect = name_surface.get_rect(bottomright = name_pos)
             self.surface.blit(name_surface, name_rect)
         elif self.selected == "massive bob":
             position = f"position: {self.selected_rect.center}"
-            position_surface = self.font_big.render(position, 1, self.blk)
-            position_pos = SCREEN_W - 3, SCREEN_H
+            position_surface = self.font_big.render(position, 1, BLACK)
+            position_pos = SCREEN_WIDTH - 3, SCREEN_HEIGHT
             position_rect = position_surface.get_rect(bottomright = position_pos)
             self.surface.blit(position_surface, position_rect)
 
-            name_surface = self.font_big.render(self.selected, 1, self.blk)
+            name_surface = self.font_big.render(self.selected, 1, BLACK)
             name_pos = position_rect.topright
             name_rect = name_surface.get_rect(bottomright = name_pos)
             self.surface.blit(name_surface, name_rect)
         elif self.selected == "massless rod":
             end = f"end point: {self.selected_rect.midbottom}"
-            end_surface = self.font_big.render(end, 1, self.blk)
-            end_pos = SCREEN_W - 3, SCREEN_H
+            end_surface = self.font_big.render(end, 1, BLACK)
+            end_pos = SCREEN_WIDTH - 3, SCREEN_HEIGHT
             end_rect = end_surface.get_rect(bottomright = end_pos)
             self.surface.blit(end_surface, end_rect)
 
             start = f"start point: {self.selected_rect.midtop}"
-            start_surface = self.font_big.render(start, 1, self.blk)
+            start_surface = self.font_big.render(start, 1, BLACK)
             start_pos = end_rect.topright
             start_rect = start_surface.get_rect(bottomright = start_pos)
             self.surface.blit(start_surface, start_rect)
 
-            name_surface = self.font_big.render(self.selected, 1, self.blk)
+            name_surface = self.font_big.render(self.selected, 1, BLACK)
             name_pos = start_rect.topright
             name_rect = name_surface.get_rect(bottomright = name_pos)
             self.surface.blit(name_surface, name_rect)
@@ -155,10 +150,10 @@ class Pendulum:
 
     def draw_license_disclaimer(self):
         disclaimer = "MIT License Copyright (c) 2023 Jacob Alexander Thompson"
-        text_surface = self.font.render(disclaimer, 1, self.blk)
-        text_pos = 3, SCREEN_H
-        text_rect = text_surface.get_rect(bottomleft = text_pos)
-        self.surface.blit(text_surface, text_rect)
+        surface = self.font.render(disclaimer, 1, BLACK)
+        pos = 3, SCREEN_HEIGHT
+        rect = surface.get_rect(bottomleft = pos)
+        self.surface.blit(surface, rect)
 
     def draw_frame(self):
         self.draw_background()
@@ -167,7 +162,7 @@ class Pendulum:
 
         self.draw_pendulum()
 
-        if not self.in_use:
+        if not self.active:
             self.draw_license_disclaimer()
 
     def update_frame(self):
