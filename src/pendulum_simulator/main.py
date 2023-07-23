@@ -11,10 +11,10 @@ def main():
     while 1:
         pendulum.tick()
 
-        pendulum.update_mouse_position()
-
         for e in event.get():
             pendulum.handle_event(e)
+
+        pendulum.handle_mouse()
 
         pendulum.draw_frame()
         pendulum.update_frame()
