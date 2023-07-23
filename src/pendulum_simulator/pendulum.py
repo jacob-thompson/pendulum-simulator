@@ -85,8 +85,7 @@ class Pendulum:
         elif rod_hitbox.collidepoint(pos) and button == 3:
             self.selected_rect = rod_hitbox.copy()
             self.selected = "massless rod"
-        else:
-            self.selected = None
+        else: self.selected = None
 
     def draw_background(self):
         self.surface.fill(self.wht)
@@ -143,6 +142,11 @@ class Pendulum:
             name_rect = name_surface.get_rect(bottomright = name_pos)
             self.surface.blit(name_surface, name_rect)
 
+    def draw_pendulum(self):
+        self.draw_pivot()
+        self.draw_rod()
+        self.draw_bob() # must be drawn after rod
+
     def draw_info(self):
         info = "MIT License Copyright (c) 2023 Jacob Alexander Thompson"
         text_surface = self.font.render(info, 1, self.blk)
@@ -155,11 +159,7 @@ class Pendulum:
 
         self.draw_selected()
 
-        self.draw_rod()
-
-        # must be drawn after rod
-        self.draw_pivot()
-        self.draw_bob()
+        self.draw_pendulum()
 
         if not self.in_use:
             self.draw_info()
